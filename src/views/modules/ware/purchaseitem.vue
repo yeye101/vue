@@ -64,6 +64,8 @@
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
+          <el-button type="text" size="small" v-if="scope.row.status==2" @click="downHandle(scope.row.id,scope.row.purchaseId,3)">完成采购</el-button>
+          <el-button type="text" size="small" v-if="scope.row.status==2" @click="downHandle(scope.row.id,scope.row.purchaseId,4)">采购失败</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -102,6 +104,7 @@
 </template>
 
 <script>
+import { isNull } from "util";
 import AddOrUpdate from "./purchasedetail-add-or-update";
 export default {
   data() {
@@ -231,6 +234,40 @@ export default {
         this.dataListLoading = false;
       });
     },
+    downHandle(id,purchaseId,status){
+      if(isNull(purchaseId)){
+        this.$message.error(data.msg)
+        return;
+      }
+      let purchaseList=new Array;
+      purchaseList.push({
+      "itemId": id,
+      "status": status,
+      "reason": ""
+    });
+
+      this.$http({
+        url: this.$http.adornUrl("/ware/purchase/done"),
+        method: "post",
+        data: this.$http.adornData({
+          id: purchaseId,
+          items: purchaseList
+        },false)
+      }).then(({ data }) => {
+        this.$message({
+            message: "操作成功",
+            type: "success",
+            duration: 1500,
+            onClose: () => {
+              this.getDataList();
+            }
+          });
+      });
+
+
+      
+    },
+
     // 每页数
     sizeChangeHandle(val) {
       this.pageSize = val;

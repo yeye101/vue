@@ -62,6 +62,12 @@
             v-if="scope.row.status==0||scope.row.status==1"
             @click="opendrawer(scope.row)"
           >分配</el-button>
+          <el-button
+            type="text"
+            size="small"
+            v-if="scope.row.status==1"
+            @click="recive(scope.row.id)"
+          >领取</el-button>
           <el-button type="text" size="small" @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
           <el-button type="text" size="small" @click="deleteHandle(scope.row.id)">删除</el-button>
         </template>
@@ -168,6 +174,31 @@ export default {
         }
       });
     },
+
+    recive(id) {
+
+
+      this.$http({
+        url: this.$http.adornUrl(
+          `/ware/purchase/received`
+        ),
+        method: "post",
+        data: [id],
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.$message({
+            message: "操作成功",
+            type: "success",
+            duration: 1500,
+            onClose: () => {
+              this.getDataList();
+            }
+          });
+        } else {
+          this.$message.error(data.msg);
+        }
+      });
+    },
     getUserList() {
       this.$http({
         url: this.$http.adornUrl("/sys/user/list"),
@@ -189,7 +220,8 @@ export default {
         params: this.$http.adornParams({
           page: this.pageIndex,
           limit: this.pageSize,
-          key: this.dataForm.key
+          key: this.dataForm.key,
+          status: this.dataForm.status
         })
       }).then(({ data }) => {
         if (data && data.code === 0) {
